@@ -1,5 +1,4 @@
 const Discord = require("discord.js");
-const quote = require("../../utils/quote.js")
 const error = require("../../utils/errors.js")
 
 module.exports = {
@@ -7,6 +6,7 @@ module.exports = {
   aliases: ["servericon"],
   usage: "icon",
   description: "Mostra o icone do servidor",
+  category: 'info',
   run: async (client, message, args) => {
     if (!message.channel.permissionsFor(client.user.id).has('SEND_MESSAGES')) return error.permissionFor(message)
 
@@ -17,6 +17,6 @@ module.exports = {
       .setImage(icon)
       .setColor("#ff0000")
       .setFooter(`Requisitado por ${message.author.tag}`, message.author.displayAvatarURL())
-    message.quote(icone)
+    message.respond(icone)
   }
 }

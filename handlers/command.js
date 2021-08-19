@@ -4,7 +4,6 @@ const Discord = require("discord.js")
 module.exports = (client) => {
      fs.readdirSync('./comandos/').forEach(local => {
         const comandos = fs.readdirSync(`./comandos/${local}`).filter(arquivo => arquivo.endsWith('.js'))
-
         for(let file of comandos) {
             let puxar= require(`../comandos/${local}/${file}`)
 

@@ -1,16 +1,14 @@
 const Discord = require("discord.js")
 const db = require("quick.db")
-const quote = require("../../utils/quote.js")
-
 module.exports = {
   name: "configmod",
   aliases: ["servermod", "configmods", "modsconfig"],
   description: "Configura os canais com reações",
   usage: "desativar",
-  run: async (client, message, args) => {
+  category: 'configs',
+  run: async (client, message, args, prefix) => {
     if (!message.channel.permissionsFor(client.user.id).has('SEND_MESSAGES')) return error.permissionFor(message)
-if(!message.member.hasPermission("MANAGE_GUILD")) return message.channel.send("**Você precisa ter a permissão de `Gerenciar Servidor` para executar este comando**")
-const prefix = db.get(`${message.guild.id}.prefix`) || 'F!';
+if(!message.member.hasPermission("MANAGE_GUILD")) return message.respond("**Você precisa ter a permissão de `Gerenciar Servidor` para executar este comando**");
 
 
 const embed = new Discord.MessageEmbed()
@@ -19,7 +17,7 @@ const embed = new Discord.MessageEmbed()
 .setColor("#ff00c1")
 .setFooter(`Para saber os placeholders use ${prefix}placeholders`)
 .setDescription("> Para configurar cada opção basta reagir ao emoji da categoria indicada\n\n> **Canais**\n **<:suporte_Fusion:824603708783460422> <a:setaFusion:816816386843738162> `Mod Logs`**\n**<a:download_Fusion:826103385623101470> <a:setaFusion:816816386843738162> `Sugestões`**\n**<:b_wifi:835236250558005269> <a:setaFusion:816816386843738162> `Level Up`**\n\n**Desativar**\n<:b_delete:835233267640434750> **<a:setaFusion:816816386843738162> `Level Up`**\n**<:delete_Fusion:824604387099934782> <a:setaFusion:816816386843738162> `Mod Log`**\n**<:host_Fusion:831121757732601898> <a:setaFusion:816816386843738162> `Sugestão`**")
-var msgs = await message.quote(embed)
+var msgs = await message.respond(embed)
 await msgs.react("<:suporte_Fusion:824603708783460422>");
 await msgs.react("<a:download_Fusion:826103385623101470>");
 await msgs.react("<:b_wifi:835236250558005269>");
@@ -31,12 +29,13 @@ const filter = (reaction, user) => user.id === message.author.id;
     var collector = msgs.createReactionCollector(filter, {
       time: 900000
     });
-    collector.on("collect", (reaction, user) => {
+    collector.on("collect", async (reaction, user) => {
       const member = message.guild.member(user);
       switch (reaction.emoji.name) {
         case "b_delete":
-        db.delete(`channelup_${message.guild.id}`)
-        db.delete(`lvlM_${message.guild.id}`)
+        client.db.ref(`Guilds/${message.guild.id}/sistems`).update({
+          level: false
+          })
         message.channel.send("**Sistema de Level Up Desativado**")
         break;
         case "delete_Fusion":
@@ -133,7 +132,7 @@ message.channel.send("**<a:carregando_Fusion:824602024314273792> Mencione um can
  message.channel.send("**<a:carregando_Fusion:824602024314273792> Mencione um canal para ser o canal de level up**").then(msg => {
    let collector = message.channel.createMessageCollector(m => 
    m.author.id === message.author.id, {max: 1})
-   .on("collect", message => {
+   .on("collect", async message => {
      msg.delete()
            let channel =
       message.mentions.channels.first() 
@@ -145,8 +144,7 @@ message.channel.send("**<a:carregando_Fusion:824602024314273792> Mencione um can
         return message.channel.send("**Eu não possuo permissão de `Enviar Mensagens` neste canal**");
        } 
 
-    try {
-      let a = db.get(`channelup_${message.guild.id}`);
+      let a = await client.db.ref(`Guilds/${message.guild.id}/configs/channels/levelup`).once('value').then(r => r.val())
 
       if (channel.id === a) {
         return message.channel.send("**Este canal já foi setado**"); 
@@ -156,15 +154,15 @@ message.channel.send("**<a:carregando_Fusion:824602024314273792> Mencione um can
           .get(message.guild.id)
           .channels.cache.get(channel.id)
           .send("**Canal de Level Up setado neste Canal!**");
-        db.set(`channelup_${message.guild.id}`, channel.id);
+        client.db.ref(`Guilds/${message.guild.id}/configs/channels`).update({
+          levelup: channel.id
+        })
 
         message.channel.send(`**Canal de level up setado em ${channel}**`);
       }
       
  
-    } catch (e) {
-      return message.channel.send(`Error`);
-    }
+    
    })
  })
   break;

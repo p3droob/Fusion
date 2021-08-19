@@ -3,6 +3,7 @@ module.exports = {
   aliases: ['rbxuser', 'rbuser', 'robloxuser', 'robloxu', 'rbuser'],
   usage: 'rbxuser <nick do roblox>',
   description: 'mostra as informações de um usuário do roblox',
+  category: 'info',
   run: async (client, message, args) => {
     const discord = require('discord.js');
     const roblox = require('noblox.js');
@@ -20,24 +21,24 @@ module.exports = {
 
             const embed = new discord.MessageEmbed()
               .setTitle(info.username)
-              .setColor('e2231a')
+              .setColor(client.colors.embedFields)
               .setThumbnail(`https://www.roblox.com/bust-thumbnail/image?userId=${id}&width=420&height=420&format=png`)
 
-              .addField('<:robloxlogo:804814541631914035> Username', `\`${info.username}\`` || 'Sem solução', true)
+              .addField('<:roblox_logo:871066240347676692> Username', `\`${info.username}\`` || 'Sem solução', true)
               .addField(':computer: User ID', id || 'Sem solução', true)
               .addField(':blue_book: Sobre mim', info.blurb || 'Nada', true)
               .addField(':star: Status', info.status || 'Nada', true)
               .addField(':date: Data de conta', `${info.age} Dias` || 'Sem solução', true)
               .addField(':calendar: Data de registro', `${data}` || 'Sem solução', true)
               .addField('User Link', `https://roblox.com/users/${id}/profile`, true);
-            message.reply(embed);
+            message.respond(embed);
           });
         }
 
 
       }).catch((err) => {
-        message.reply('Ah! Eu não encontrei este usuário, ou talvez ele não exista, desculpe pela inconveniência!'); // catching error
+        message.respond('Ah! Eu não encontrei este usuário, ou talvez ele não exista'); // catching error
       });
-    } else { message.reply('Por favor especifique um usuário válido'); }
+    } else { message.respond('Por favor especifique um usuário válido'); }
   },
 };

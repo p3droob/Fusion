@@ -6,15 +6,15 @@ module.exports = {
   aliases: ["infocmd"],
   description: "Mostra as informações de todos os comandos",
   usage: "info (comando)",
-  run: async (client, message, args) => {
+  category: 'info',
+  run: async (client, message, args, prefix) => {
     if (!message.channel.permissionsFor(client.user.id).has('SEND_MESSAGES')) return error.permissionFor(message)
 
-    const prefix = db.get(`${message.guild.id}.prefix`) || 'F!';
 
     const name = args[0];
     if (!name) return message.channel.send("Você deve enviar um comando")
 
-    const comando = client.commands.get(name) || client.commands.find((cmd) => cmd.aliases.includes(name))
+    const comando = client.commands.get(name) || client.commands.get(client.aliases.get(name))
 
     if (!comando) return message.channel.send("**Não encontrei este comando!**")
 
@@ -40,14 +40,20 @@ module.exports = {
       )
       .addFields(
         {
-          name: "Modo de usar",
+          name: "Modo de uso",
           value: `\`${prefix}${comando.usage || "Nenhum"}\``,
+        }
+      )
+      .addFields(
+        {
+          name: "Cooldown",
+          value: `\`${comando.cooldown || "3"}\``,
         }
       )
 
       .setColor("#ff0000")
       .setThumbnail(message.guild.iconURL())
-    message.channel.send(embed)
+    message.respond(embed)
 
   }
 }

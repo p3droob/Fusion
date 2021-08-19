@@ -1,44 +1,108 @@
-const Discord = require('discord.js')
-const db = require('quick.db');
-const quote = require("../../utils/quote.js")
-
+const Canvas = require('canvas');
+const Discord = require('discord.js');
+const moment = require('moment-timezone');
+const EmojiRender = require('node-canvas-with-twemoji');
+const DCemoji = require('node-canvas-with-twemoji-and-discord-emoji');
 module.exports = {
     name: "perfil",
-    aliases: ["profile"],
-    run: async (client, message, args) => {
+    aliases: ['profile'],
+  category: 'social',
+  run: async (client, message, args, prefix) => {
 
-const prefix = db.get(`${message.guild.id}.prefix`) || 'F!';
+    //           DEFININDO O USER
+   const user = client.users.cache.get(args[0]) || message.mentions.users.first() || message.author;
 
-const user = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
-//casal
-let casal = client.users.cache.get(db.fetch(`married_${user.id}`, message.author.id));
-if (casal == null) casal = 'ninguém';
-//casalid
-let casalid = db.fetch(`married_${user.id}`, message.author.id);
-if (casalid == null) casalid = '';
-//sobremim
-let aboutme = await db.fetch(`aboutme_${user.id}`);
-if (aboutme == null) aboutme = `Olá eu sou o ${user.username} (Você pode alterar isso usando ${prefix}sobremim)!`;
-//atm
-let atm = await db.get(`flocos_${user.id}`) || 0;
-//bugs
-let bugs = db.fetch(`bugs_${user}`) || 0;
+    //           REGISTRANDO FONTES
+    Canvas.registerFont(("./assets/fonts/Segoe UI Black.ttf"), { family: "Segoe UI Black" });
+    Canvas.registerFont(("./assets/fonts/Poppins-Regular.ttf"), { family: "Poppins-Regular" });
+    Canvas.registerFont(("./assets/fonts/TREBUC.ttf"), { family: "TREBUC"})
+    
+    //puxando o perfil
+    let perfil = 'https://cdn.discordapp.com/attachments/824611809403207721/842167979209916437/backgr.png'
 
-//reps
-let reps = db.fetch(`reps_${user.id}`);
-if (reps == null) reps = '0';
+    //pegando as flags
+    let UserFlags = user.flags.toArray()
+    const converted = {
+      HOUSE_BRAVERY: '<:hypesquad_bravery:842548351497273394>',
+      HOUSE_BRILLIANCE: '<:hypesquad_briliance:842548074165436476>',
+      HOUSE_BALANCE: '<:hypesquad_balance:842548416873889802>',
+      EARLY_VERIFIED_BOT_DEVELOPER: '<:developer_Fusion:824604428140019743>',
+      VERIFIED_DEVELOPER: '<:developer_Fusion:824604428140019743>'
+      };
+    
+    //puxando o resto
+    
+    let flocos = await client.db.ref(`Users/${user.id}/flocos`).once('value').then(r => r.val()) || '0';
 
-//reps enviadas
-let repsend = db.fetch(`repsend_${user}`) || 0;
-//level
-let level = db.fetch(`level_${message.guild.id}_${user.id}`) || 0;
-let lvlglobal = db.fetch(`lvlglobal_${user.id}`) || 0;
-//embed
-let embed = new Discord.MessageEmbed()
-.setColor('#ff0000')
-.setTitle(`Perfil de ${user.username}`)
-.setDescription(`Casado(a) com: ${casal} \`(${casalid})\`\nFlocos: ${atm}\nReputações recebidas: ${reps}\nReputações enviadas: ${repsend}\nLevel no servidor: ${level}\nLevel global: ${lvlglobal}\nBugs reportados: ${bugs}\nSobre mim: **${aboutme}**`)
-.setFooter(` | Requisitado por: ${message.author.tag}`, message.author.displayAvatarURL({format: "png"}))
-message.quote(embed)
-    }
-}
+    //sobremim
+    let aboutme = await client.db.ref(`Users/${user.id}/aboutme`).once('value').then(r => r.val())
+    if (aboutme == null) aboutme = `Olá eu sou o ${user.username} (Você pode alterar isso usando ${prefix}sobremim)!`;
+    //reps
+    let reps = await client.db.ref(`Users/${user.id}/reps`).once('value').then(r => r.val());
+    if (reps == null) reps = '0';
+    //level
+    let xpL = await client.db.ref(`Guilds/${message.guild.id}/users/${user.id}/xp`).once('value').then(r => r.val()) || 0;
+    let xpG = await client.db.ref(`Users/${user.id}/xp`).once('value').then(r => r.val()) || 0;
+
+    let casal1;
+
+    let casal = await client.db.ref(`Users/${user.id}/marry`).once('value').then(r => r.val());
+    if (casal !== null) casal1 = client.users.cache.get(casal).tag;
+
+    let casaltime = await client.db.ref(`Users/${user.id}/marrytime`).once('value').then(r => r.val());
+    if (casaltime !== null) casaltime = moment(Number(casaltime)).tz('America/Sao_Paulo').fromNow();
+
+    let msgInfo = `Flocos: ${flocos}\nLocal: ${xpL} XP\nGlobal: ${xpG} XP`
+    if (casal !== null) msgInfo = `Flocos: ${flocos}\nLocal: ${xpL} XP\nGlobal: ${xpG} XP\nCasado com:\n${casal1}\n${casaltime || ''}`
+    //            CANVAS
+    const canvas = Canvas.createCanvas(1000, 600);
+    const ctx = canvas.getContext('2d');
+    const background = await Canvas.loadImage(perfil);
+
+  
+    ctx.drawImage(background, 5, 10, canvas.width, canvas.height);
+
+
+    ctx.font = `30px Segoe UI Black`;
+    ctx.fillStyle = '#ff0000';
+    await EmojiRender.fillTextWithTwemoji(ctx, 
+    user.username, 130, 40)
+
+    ctx.font = '25px Segoe UI Black';
+    ctx.fillStyle = 'WHITE';
+    await EmojiRender.fillTextWithTwemoji(ctx,
+    msgInfo, 9, 250)
+
+    ctx.font = '35px Segoe UI Black'
+    ctx.fillStyle = 'WHITE'
+    await DCemoji.fillTextWithTwemoji(ctx,
+    UserFlags.map(a => converted[a]).join(' '), 9, 200)
+
+    ctx.font = '45px Segoe UI Black';
+    ctx.fillStyle = 'WHITE';
+    ctx.fillText(`Sobremim`, 20, 518)
+    
+    ctx.font = '30xp Segoe UI Black';
+    ctx.fillStyle = "BLACK";
+    ctx.fillText(`${reps} reps`, 750, 100)
+
+    ctx.font = '25px Segoe UI Black';
+    ctx.fillStyle = 'WHITE';
+    await DCemoji.fillTextWithTwemoji(ctx,
+    aboutme, 20, 560)
+    
+
+    //Avatar
+    ctx.beginPath();
+    ctx.arc(75, 75, 60, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+
+    const avatar = await Canvas.loadImage(user.displayAvatarURL({ format: 'png' }));
+    ctx.drawImage(avatar, 13, 15, 130, 130);//520, 79, 200, 200
+    const attachment = new Discord.MessageAttachment(canvas.toBuffer(), perfil);
+
+
+    message.respond(attachment);
+  }
+  }

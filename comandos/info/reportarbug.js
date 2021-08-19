@@ -1,14 +1,15 @@
 const Discord = require('discord.js')
 const db = require('quick.db')
 module.exports = {
-  name:"reportabug",
+  name:"reportarbug",
   aliases:["bug", "rbug", "reportbug"],
   usage: 'reportarbug <bug>',
   description: 'reporte um bug',
+  category: 'info',
   run: async (client, message, args) => {
     
  const reporte = args.join(" ")
-if(!reporte) return message.channel.send(`${message.author} você deve digitar o bug`) 
+if(!reporte) return message.respond(`${message.author} você deve digitar o bug`) 
 
 const embed = new Discord.MessageEmbed()
 
@@ -22,6 +23,6 @@ const amount = 1;
 db.add(`bugs_${message.author}`, amount);
 let totalbugs = db.fetch(`bugs_${message.author}`);
 canal.send(embed)
-message.channel.send(`${message.author} o bug \`\`${reporte}\`\` foi reportado com sucesso! Até agora você reportou ${totalbugs} bugs!`)
+message.respond(`${message.author} o bug \`\`${reporte}\`\` foi reportado com sucesso!`)
 }
 }

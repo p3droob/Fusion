@@ -1,20 +1,26 @@
-const { MessageEmbed } = require('discord.js');
-
+const Discord = require('discord.js');
 module.exports = {
   name: "eval",
   aliases: ["e"],
+  category: 'dev',
   run: async (client, message, args) => {
 
-    let dev = `753252894974804068`
+    let dev = `753252894974804068`;
+    let dev2 = '599563864509513739';
 
-
-    if (![`${dev}`].some(a => message.author.id === a)) return message.reply('Só meus criadores podem usar este comando!')
-    const code = args.join(' ')
+    if (![`${dev}`, dev2, '762794711944527913', '713501355389747290'].some(a => message.author.id === a)) return;
+    var code = args.join(' ')
+    code = code.replace(/^`{3}(js)?|`{3}$/g, '');
+    code = code.replace('.env', '')
+    code = code.replace('TOKEN', '')
+    code = code.replace(process.env.TOKEN, '')
+    code = code.replace('shelljs', '')
     if (!code)
       return message.reply(
         `Insira um valor para executar o eval.`
       );
     await message.reply('.').then(async m => {
+      m.delete({ timeout: 50 })
       try {
         let beforeRunning = Date.now()
         let result = eval(code)
@@ -25,18 +31,34 @@ module.exports = {
         }
         if (typeof result !== 'string') result = require('util').inspect(result)
         let end = (Date.now() - beforeRunning)
-        let embed = new MessageEmbed(message.author).setTimestamp()
-          .setTitle(' Codigo Correto')
-          .setDescription('```' + result.slice(0, 2000) + '```')
-          .setColor('GREEn')
-        m.edit({ embed: embed })
+        result = await result.replace(/_user\((\d{16,18})\)/g, '<@$1>');
+        let fileC = new Discord.MessageEmbed()
+        .setTitle('Correto')
+        .setDescription('```js\n ' + result.substring(0, 4000) + '\n```')
+        .setFooter(end + ' ms')
+        message.respond(fileC).then(msg => {
+      msg.react('❌');
+
+      const collector = msg.createReactionCollector((r, u) => r.emoji.name === '❌' && u.id === message.author.id)
+
+        .on('collect', async (r, u) => {
+          msg.edit('Eval fechada.');
+
+        })
+    })
+
       } catch (e) {
-        let embed = new MessageEmbed(message.author).setTimestamp()
-          .setTitle('Código Incorreto')
-          .setDescription('```' + e.stack.slice(0, 2000) + '```')
-          .setColor("ff0000")
-        m.edit({ embed: embed })
+        let beforeRunning2 = Date.now()
+        let end2 = (Date.now() - beforeRunning2)
+        let fileC = new Discord.MessageEmbed()
+        .setTitle('Errado')
+        .setDescription('```js\n ' + e.stack.substring(0, 4096) + '\n```')
+        .setFooter(end2 + ' ms')
+        message.respond(fileC)
+
+
       }
     })
+
   }
 }

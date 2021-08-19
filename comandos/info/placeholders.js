@@ -1,11 +1,11 @@
 const Discord = require("discord.js")
-const quote = require("../../utils/quote.js")
 
 module.exports = {
   name: "placeholders",
   aliases: ["variaveis", "configmessages"],
   usage: "placeholders",
   description: "Mostra todas as variaveis para se usar nos set messages",
+  category: 'info',
   run: async (client, message, args) => {
 
 const place = new Discord.MessageEmbed()
@@ -15,7 +15,7 @@ const place = new Discord.MessageEmbed()
 .setColor("RED")
 .setTimestamp()
 .setFooter(`Requisitado por ${message.author.tag}`, message.author.displayAvatarURL())
-message.quote(place)
+message.respond(place)
 
   }
 }

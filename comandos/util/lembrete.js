@@ -1,6 +1,5 @@
 const { MessageEmbed } = require("discord.js")
 const ms = require("ms")
-const quote = require("../../utils/quote.js")
 const emoji = require("../../utils/emojis.js")
 const error = require("../../utils/errors.js")
 
@@ -8,12 +7,13 @@ module.exports = {
   name: "lembrar",
   aliases: ["lembrete", "despertador", "lembrar"],
   description: "Lembra você de algo em um tempo setado",
-  usage: "lembrar",
+  usage: "lembrar <algo>",
+  category: 'util',
   run: async (client, message, args) => {
 
     if (!message.channel.permissionsFor(client.user.id).has('SEND_MESSAGES')) return error.permissionFor(message)
 
-message.quote(`**${emoji.carregando} | Do que você quer que eu te lembre?**`).then(msg => {
+message.respond(`**${emoji.carregando} | Do que você quer que eu te lembre?**`).then(msg => {
   let collector = message.channel.createMessageCollector(m => 
   m.author.id === message.author.id, {max: 1})
   .on("collect", message => {

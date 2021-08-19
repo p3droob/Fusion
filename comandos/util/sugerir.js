@@ -1,4 +1,4 @@
-const db = require('quick.db') //Fetching the quick.db module
+const db = require('quick.db') 
 const {MessageEmbed, discord} = require('discord.js')//Fetching the MessageEmbed constructor and discord library
 
 module.exports = {//Command Configuration
@@ -6,7 +6,8 @@ module.exports = {//Command Configuration
     description: "sugira algo para todos",//The command description for the help command
     aliases: ['suggest'],//The command alias EX: People could use <p>s <suggestion> instead of <p>suggest <suggestion>
     usage: "sugerir <sugestão>",
-    run: async(bot, message, args) => {//Running the command(Writing our code so it could import it)
+  category: 'util',
+    run: async(client, message, args) => {//Running the command(Writing our code so it could import it)
         let avatar = message.author.avatarURL({ dynamic: true, format: "gif", size: 1024 });
 
         const content = args.join(" ");
@@ -15,8 +16,8 @@ module.exports = {//Command Configuration
         if(channel == null){
             return message.channel.send(`Não há uma configuração de canal de sugestão definida. Para definir o canal use F!setsugerir <mencione o canal ou use o id>!`)
              }
-             if (!args[0]) return message.quote(`Forneça uma sugestão!`)
-             if (content.length > 500) return message.quote(`${message.author}, Você deve fornecer uma mensagem com no máximo 500 caractéres!`)
+             if (!args[0]) return message.respond(`Forneça uma sugestão!`)
+             if (content.length > 500) return message.respond(`${message.author}, Você deve fornecer uma mensagem com no máximo 500 caractéres!`)
         const webhooks = await channel.fetchWebhooks()
         
         var webhook = webhooks.first();//Fetches the first webhook
@@ -41,7 +42,7 @@ module.exports = {//Command Configuration
             })
           })  
         })
-        message.quote(` <a:fogo_coloridoFusion:816983900584542218> | Sua sugestão foi enviada para o canal <#${channel.id}>.`)
+        message.respond(` <a:fogo_coloridoFusion:816983900584542218> | Sua sugestão foi enviada para o canal <#${channel.id}>.`)
         message.delete()
         
         .catch((err)=>{

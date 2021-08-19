@@ -1,5 +1,4 @@
 const fetch = require("node-fetch");
-const quote = require("../../utils/quote.js")
 const error = require("../../utils/errors.js")
 const db = require('quick.db')
 
@@ -8,12 +7,11 @@ module.exports = {
   aliases: ["corona"],
   usage: "covid country (pais)",
   description: "Mostra a situação do covid de um correto pais",
-  run: async (client, message, args) => {
-    if (!message.channel.permissionsFor(client.user.id).has('SEND_MESSAGES')) return error.permissionFor(message)
+  category: 'info',
+  run: async (client, message, args, prefix) => {
 
-    const prefix = db.get(`${message.guild.id}.prefix`) || "f!"
     if (args[0] !== 'country' || !args[0])
-      return message.quote(`**Use \`${prefix}covid country <pais>\`**`)
+      return message.respond(`**Use \`${prefix}covid country <pais>\`**`)
 
     let country;
 
@@ -28,7 +26,7 @@ module.exports = {
         .then(res => res.json())
         .then(body => {
           if (!body)
-            return message.quote("** Não achei status de covid-19 neste país**");
+            return message.respond("** Não achei status de covid-19 neste país**");
           if (body.message === "País não encontrado")
             message.reply(
               `Neste pais não existem casos ou ${country} não é um país`
@@ -60,7 +58,7 @@ module.exports = {
             )
             .setColor("BLACK")
 
-          message.quote(COVIDembed);
+          message.respond(COVIDembed);
         });
     }
   }
